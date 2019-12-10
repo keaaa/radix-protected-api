@@ -1,0 +1,73 @@
+apiVersion: radix.equinor.com/v1
+kind: RadixApplication
+metadata:
+  name: omniaml-example
+spec:
+  environments:
+    - name: qa
+      build:
+        from: master
+  
+  components:
+    - name: api
+      src: ./api
+      ports:
+        - name: http
+          port: 8080
+    - name: jwt-auth
+      src: ./jwt-auth
+      ports:
+        - name: http
+          port: 8080
+      environmentConfig:
+        - environment: prod
+          variables:
+            API_RESOURCE_ID: "1025aa65-09e1-41a8-8c59-68ede2e41340"
+    - name: swagger
+      image: swaggerapi/swagger-ui:latest
+      ports:
+        - name: http
+          port: 8080
+      environmentConfig:
+        - environment: prod
+          variables:
+            URL: "/swagger.json"
+    - name: proxy
+      src: ./proxy
+      publicPort: http
+      ports:
+        - name: http
+          port: 8080
+    - name: auth-state
+      image: redis:5-alpine
+      ports:
+        - name: redis
+          port: 6379
+    - name: auth
+      image: quay.io/pusher/oauth2_proxy:v4.0.0
+      ports:
+        - name: http
+          port: 8000
+      publicPort: http
+      secrets:
+        - OAUTH2_PROXY_CLIENT_SECRET
+        - OAUTH2_PROXY_COOKIE_SECRET
+      environmentConfig:
+        - environment: prod
+          variables:
+            OAUTH2_PROXY_CLIENT_ID: "5687b237-eda3-4ec3-a2a1-023e85a2bd84"
+            OAUTH2_PROXY_COOKIE_REFRESH: "60m"
+            OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+            OAUTH2_PROXY_HTTP_ADDRESS: "http://:8000"
+            OAUTH2_PROXY_OIDC_ISSUER_URL: "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0/v2.0"
+            OAUTH2_PROXY_PASS_ACCESS_TOKEN: "true"
+            OAUTH2_PROXY_PASS_BASIC_AUTH: "false"
+            OAUTH2_PROXY_PASS_USER_HEADERS: "false"
+            OAUTH2_PROXY_PROVIDER: "oidc"
+            OAUTH2_PROXY_REDIRECT_URL: "https://auth-omniaml-example-qa.playground.radix.equinor.com/oauth2/callback"
+            OAUTH2_PROXY_REDIS_CONNECTION_URL: "redis://auth-state:6379"
+            OAUTH2_PROXY_SESSION_STORE_TYPE: "redis"
+            OAUTH2_PROXY_SCOPE: "openid profile 1025aa65-09e1-41a8-8c59-68ede2e41340/user_impersonation email"
+            OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"
+            OAUTH2_PROXY_UPSTREAMS: http://proxy:8080
+
