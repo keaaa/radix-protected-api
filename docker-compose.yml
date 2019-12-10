@@ -25,6 +25,8 @@ services:
   jwt-auth:
     build: ./jwt-auth
     container_name: omnia-ml_jwt_auth
+    environment:
+      - API_RESOURCE_ID=${API_RESOURCE_ID}
     networks:
       - omnia-ml
     ports:

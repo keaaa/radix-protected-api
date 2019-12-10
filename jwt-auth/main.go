@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -26,6 +27,7 @@ type AzurePublicKey struct {
 }
 
 var publicKeys map[string]*rsa.PublicKey
+var apiAudience string
 
 func main() {
 	go func() {
@@ -35,9 +37,13 @@ func main() {
 		}
 	}()
 
+	apiAudience = os.Getenv("API_RESOURCE_ID")
+	port := ":8080"
+
 	router := mux.NewRouter().StrictSlash(true)
 	router.PathPrefix("/").HandlerFunc(authorizeRequest)
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Printf("listening on port %s for audience %s", port, apiAudience)
+	log.Fatal(http.ListenAndServe(port, router))
 }
 
 func authorizeRequest(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +82,12 @@ func validateToken(token string) error {
 	if err != nil {
 		return err
 	}
-	if !parsedToken.Valid {
+	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
+		audience := fmt.Sprintf("%v", claims["aud"])
+		if audience != apiAudience {
+			return fmt.Errorf("expected audience %s, was %s", apiAudience, audience)
+		}
+	} else {
 		return fmt.Errorf("invalid token")
 	}
 
