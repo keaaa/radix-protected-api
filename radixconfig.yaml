@@ -71,3 +71,6 @@ spec:
             OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"
             OAUTH2_PROXY_UPSTREAMS: http://proxy:8080
 
+  dnsAppAlias:
+    environment: qa
+    component: auth
