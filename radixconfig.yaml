@@ -20,7 +20,7 @@ spec:
         - name: http
           port: 8080
       environmentConfig:
-        - environment: prod
+        - environment: qa
           variables:
             API_RESOURCE_ID: "1025aa65-09e1-41a8-8c59-68ede2e41340"
     - name: swagger
@@ -29,7 +29,7 @@ spec:
         - name: http
           port: 8080
       environmentConfig:
-        - environment: prod
+        - environment: qa
           variables:
             URL: "/swagger.json"
     - name: proxy
@@ -53,7 +53,7 @@ spec:
         - OAUTH2_PROXY_CLIENT_SECRET
         - OAUTH2_PROXY_COOKIE_SECRET
       environmentConfig:
-        - environment: prod
+        - environment: qa
           variables:
             OAUTH2_PROXY_CLIENT_ID: "5687b237-eda3-4ec3-a2a1-023e85a2bd84"
             OAUTH2_PROXY_COOKIE_REFRESH: "60m"
